@@ -31,9 +31,9 @@ python references/legibility_audit.py --truth examples/truth.png --test examples
 
 已补：空白/退化信号标 UNKNOWN；拒绝非有限阈值，输出标准 JSON；失败校准返回失败码；提供可运行的合成图片示例。
 
-## 仍然缺什么
+## 当前限制
 
-不是 OCR，也不判读具体文字；旋转与阈值搜索不能完全处理透视、背景与噪声；高低分都不能证明同源或重绘，需要人工逐字看图。
+实际 OCR 需要安装 Tesseract 和所需语言包；当前只实测 TSV 比对，没有安装引擎，不能声称真实图片 OCR 已通过。置信度不是正确概率，中文、艺术字体和透视仍需人工复核。
 
 ## 验证与使用注意
 
@@ -50,3 +50,21 @@ python -m unittest discover -s tests -v
 由 miaorrr8888-cloud 在 AI 辅助下积累和维护，来源与边界见 [PROVENANCE.md](PROVENANCE.md)，许可见 [LICENSE](LICENSE)。
 
 [全部独立技能与阶段性工作记录](https://github.com/miaorrr8888-cloud/agent-skills-worklog)
+
+## 第二轮：OCR 文字比对
+
+新增 Tesseract OCR 接口和 TSV 导入；对比期望文字，低置信度、无文字或文字不同分别标记，避免只看几何分数。
+
+在仓库根目录运行：
+
+```sh
+python scripts/ocr_check.py --tsv examples/ocr.tsv --expected "DEMO 123"
+# 安装 Tesseract 与语言包后，使用真实图片：
+# python scripts/ocr_check.py --image examples/test.png --expected "实际应有文字" --lang chi_sim+eng
+```
+
+新增工具的输入字段见脚本参数与 examples/。快照示例采用固定日期，过期后正常返回 HOLD；需要检查新采集的页面时填写真实带时区的采集时间，不要改日期伪装新证据。
+
+## 接入依据
+
+[Tesseract 官方命令行与 TSV 文档](https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html)。语言数据需要单独安装。
