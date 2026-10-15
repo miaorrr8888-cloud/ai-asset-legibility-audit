@@ -248,6 +248,8 @@ def main():
     ap.add_argument("--out", default="legibility_out")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
+    if not np.isfinite(a.th) or not 0 <= a.th <= 255:
+        ap.error("--th 必须是 0 到 255 的有限数值")
 
     if not a.truth or not a.truth_box:
         ap.error("--truth 与 --truth-box 必填")
@@ -255,7 +257,8 @@ def main():
     os.makedirs(a.out, exist_ok=True)
 
     if a.selftest:
-        selftest(a.truth, tbox, a.th, a.out)
+        if not selftest(a.truth, tbox, a.th, a.out):
+            raise SystemExit(1)
         return
 
     if not a.test or not a.test_box:
@@ -280,7 +283,10 @@ def main():
     # ★ 必须传【待测(test)】的灰度裁剪去搜索，不是真值裁剪。
     #   曾经误传真值裁剪 → 变成拿真值跟自己比 → 恒为 IoU=1.0000 假阳性。
     v_crop_gray = crop(vg, vbox)
-    best_iou, best_s, best_ang = _best_scale_rot(na, v_crop_gray, a.th)
+    if tm.sum() == 0 or vm.sum() == 0 or tm.all() or vm.all():
+        best_iou,best_s,best_ang=float('nan'),1.0,0
+    else:
+        best_iou, best_s, best_ang = _best_scale_rot(na, v_crop_gray, a.th)
 
     tag, msg = verdict_from_best(best_iou)
     save_sidebyside(na, nb, os.path.join(a.out, "mask_sidebyside.png"))
@@ -297,7 +303,7 @@ def main():
           f"{'两者互证，信心高' if agree else '★两者冲突，必须人工看图裁定，勿下结论'}")
     print("提示：分数仅描述几何相似性；高分或低分均不能证明来源或重绘方式。")
 
-    json.dump({"best_iou": round(best_iou, 4), "best_scale": best_s,
+    json.dump({"best_iou": round(best_iou, 4) if np.isfinite(best_iou) else None, "best_scale": best_s,
                "best_angle_deg": best_ang, "verdict": tag,
                "iou_no_rotation_search": round(v_plain, 4),
                "truth_row_bands": len(tb), "test_row_bands": len(vb),
@@ -305,9 +311,12 @@ def main():
                "truth_box": list(tbox), "test_box": list(vbox), "th": a.th,
                "evidence_agreement": bool(agree)},
               open(os.path.join(a.out, "legibility_verdict.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=1)
+              ensure_ascii=False, indent=1, allow_nan=False)
     print(f"saved {a.out}/legibility_verdict.json, {a.out}/mask_sidebyside.png")
 
 
 if __name__ == "__main__":
-    main()
+    try: main()
+    except (OSError,ValueError) as exc:
+        print('Input error: '+str(exc),file=sys.stderr)
+        raise SystemExit(2)
