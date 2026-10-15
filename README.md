@@ -33,7 +33,7 @@ python references/legibility_audit.py --truth examples/truth.png --test examples
 
 ## 当前限制
 
-实际 OCR 需要安装 Tesseract 和所需语言包；当前只实测 TSV 比对，没有安装引擎，不能声称真实图片 OCR 已通过。置信度不是正确概率，中文、艺术字体和透视仍需人工复核。
+OCR会误识或漏识；测试使用清晰合成图片，不代表复杂照片、艺术字体、透视和全视频都可靠。仍需人工核对原图。RapidOCR依赖及模型归上游许可；本库只列安装依赖，不重新分发模型。Tesseract路线仍需自己安装引擎。
 
 ## 验证与使用注意
 
@@ -68,3 +68,15 @@ python scripts/ocr_check.py --tsv examples/ocr.tsv --expected "DEMO 123"
 ## 接入依据
 
 [Tesseract 官方命令行与 TSV 文档](https://tesseract-ocr.github.io/tessdoc/Command-Line-Usage.html)。语言数据需要单独安装。
+
+## 第三轮：本地OCR真实识字
+
+增加 RapidOCR ONNX 本地引擎，直接读取图片，输出文字框与置信度并与期望文字比较。中文、英文、型号数字测试图实际匹配通过；故意写错数字时能报告不匹配。
+
+```sh
+python -m pip install -r requirements-ocr.txt
+python scripts/rapid_ocr_check.py examples/ocr-real.png --expected "产品型号 DEMO 123 价格 199 元"
+# 将 DEMO 123 改为 DEMO 128，会返回 TEXT_MISMATCH 和退出码 1。
+```
+
+本地OCR实现依据：[RapidOCR 上游项目](https://github.com/RapidAI/RapidOCR)。本次固定 rapidocr_onnxruntime==1.4.4 验证，不把该依赖或模型的许可改为本库MIT。
