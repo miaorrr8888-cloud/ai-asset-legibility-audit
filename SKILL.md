@@ -29,3 +29,7 @@ license: MIT
 增加 RapidOCR ONNX 本地引擎，直接读取图片，输出文字框与置信度并与期望文字比较。中文、英文、型号数字测试图实际匹配通过；故意写错数字时能报告不匹配。
 
 执行命令和当前限制见 [README.md](README.md) 的第三轮章节。
+
+## 面向使用者的说明
+
+解释用途、适用人群、下载和第一次运行时，读 [USER_GUIDE.md](USER_GUIDE.md)；需要中文对外介绍时参考 [INTRODUCTION.md](INTRODUCTION.md)，不要把介绍稿等同于已发布。

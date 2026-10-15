@@ -1,5 +1,7 @@
 # 图片文字与数字可读性辅助检查
 
+[新手逐步使用指南](USER_GUIDE.md) · [用途与适用人群介绍](INTRODUCTION.md)
+
 `ai-asset-legibility-audit` · 独立技能仓库 · MIT
 
 适合：检查 AI 图片、产品屏幕和字幕帧的设计师或 QA
